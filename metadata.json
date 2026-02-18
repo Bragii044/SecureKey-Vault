@@ -1,0 +1,5 @@
+{
+  "name": "시큐어키 볼트",
+  "description": "안전한 클라이언트 암호화 API 자격증명 관리자. Python Streamlit 애플리케이션을 대체하는 강력한 React SPA입니다.",
+  "requestFramePermissions": []
+}

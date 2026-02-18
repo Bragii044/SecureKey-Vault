@@ -1,0 +1,67 @@
+{
+  "name": "securekey-vault",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A secure key vault application",
+  "author": "User",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "dev:electron": "concurrently -k \"npm run dev\" \"npm run electron:start\"",
+    "electron:start": "wait-on tcp:3000 && electron .",
+    "build:electron": "tsc -p electron/tsconfig.json && vite build && electron-builder",
+    "package": "npm run build:electron"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.0",
+    "recharts": "^3.7.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.24",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^34.2.0",
+    "electron-builder": "^26.7.0",
+    "lucide-react": "^0.574.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.securekey.vault",
+    "productName": "SecureKey Vault",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

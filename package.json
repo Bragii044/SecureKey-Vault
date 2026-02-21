@@ -1,23 +1,24 @@
 {
   "name": "securekey-vault",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "A secure key vault application",
   "author": "User",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "icons:generate": "node scripts/generate-icons.js",
+    "migrate:101-to-102": "node scripts/migrate-db-101-to-102.js",
+    "build": "npm run icons:generate && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "dev:electron": "concurrently -k \"npm run dev\" \"npm run electron:start\"",
     "electron:start": "wait-on tcp:3000 && electron .",
-    "build:electron": "tsc -p electron/tsconfig.json && vite build && electron-builder",
+    "build:electron": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-electron-win.ps1",
     "package": "npm run build:electron"
   },
   "dependencies": {
-    "crypto-js": "^4.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.0",
@@ -26,7 +27,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
-    "@types/crypto-js": "^4.2.2",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -65,7 +65,10 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico",
+      "installerHeaderIcon": "public/icon.ico"
     }
   }
 }

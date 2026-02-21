@@ -20,7 +20,7 @@ const App: React.FC = () => {
 
   const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
-    dbService.setMasterKey(''); // clear key from memory
+    dbService.setMasterKey(null); // clear key from memory
     setItems([]);
   }, []);
 
@@ -56,10 +56,10 @@ const App: React.FC = () => {
     setLoading(false);
   }, []);
 
-  const handleLogin = (derivedKey: string) => {
+  const handleLogin = async (derivedKey: string) => {
     try {
       dbService.setMasterKey(derivedKey);
-      refreshData();
+      await refreshData();
       setIsAuthenticated(true);
       showToast('볼트 잠금이 해제되었습니다.', 'success');
     } catch (e) {
@@ -68,20 +68,19 @@ const App: React.FC = () => {
     }
   };
 
-  const refreshData = () => {
+  const refreshData = async () => {
     try {
-      const data = dbService.getAllItems();
+      const data = await dbService.getAllItems();
       setItems(data);
     } catch (e) {
       console.error("Error fetching items", e);
     }
   };
 
-  const handleSaveItem = (item: CredentialItem) => {
+  const handleSaveItem = async (item: CredentialItem) => {
     try {
-      console.log('Saving item:', item);
-      dbService.saveItem(item);
-      refreshData();
+      await dbService.saveItem(item);
+      await refreshData();
       showToast('저장되었습니다.', 'success');
     } catch (e: any) {
       console.error("Save failed:", e);
@@ -96,10 +95,10 @@ const App: React.FC = () => {
     }
   };
 
-  const handleDeleteItem = (id: string) => {
+  const handleDeleteItem = async (id: string) => {
     try {
-      dbService.deleteItem(id);
-      refreshData();
+      await dbService.deleteItem(id);
+      await refreshData();
       showToast('삭제되었습니다.', 'success');
     } catch (e: any) {
       console.error("Delete failed:", e);

@@ -38,7 +38,8 @@ export interface EncryptedItem {
 }
 
 export interface StoredDatabase {
-  verificationHash: string; // SHA256 of the master password to verify correctness
+  version?: 1 | 2;
+  verificationHash: string; // PBKDF2-based verification hash of the master password
   salt: string;            // Salt for PBKDF2
   items: EncryptedItem[];
 }

@@ -1,76 +1,96 @@
-# SecureKey Vault 🛡️
+# SecureKey Vault (v1.0.2)
 
-**SecureKey Vault**는 Electron, React, TypeScript로 구축된 현대적이고 안전한 데스크톱 암호 관리자 애플리케이션입니다.
-모든 데이터는 기기에 로컬로 저장되며, AES-256 암호화와 PBKDF2 키 파생 함수를 사용하여 최고 수준의 보안을 제공합니다.
+SecureKey Vault는 Electron + React + TypeScript 기반의 로컬 비밀번호 보관 앱입니다.  
+모든 데이터는 사용자 기기 내부에만 저장되며, 마스터 비밀번호로 암호화됩니다.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
-![Electron](https://img.shields.io/badge/Electron-34.0.0-yf.svg)
-![React](https://img.shields.io/badge/React-19.0.0-61dafb.svg)
+## 핵심 기능
 
-## ✨ 주요 기능
+- 로컬 전용 저장소 사용 (클라우드 업로드 없음)
+- AES-GCM 기반 데이터 암호화
+- PBKDF2 기반 키 파생/비밀번호 검증
+- 백업(.json) 내보내기/불러오기
+- 1.0.1 백업을 1.0.2 포맷으로 변환 지원
 
-*   **🔒 강력한 보안**: 모든 비밀번호와 데이터는 AES-256 알고리즘으로 암호화되어 로컬에 저장됩니다.
-*   **🔑 마스터 암호 보호**: PBKDF2 알고리즘을 사용하여 마스터 암호를 안전하게 해싱하고 검증합니다.
-*   **🔌 오프라인 중심**: 인터넷 연결 없이도 완벽하게 작동하여 외부 해킹 위험을 최소화합니다.
-*   **📊 대시보드**: 저장된 비밀번호의 강도와 보안 상태를 한눈에 볼 수 있는 시각화된 대시보드를 제공합니다.
-*   **🖥️ 크로스 플랫폼**: Windows 환경에 최적화된 설치 파일(.exe)을 제공합니다.
-*   **🎨 모던 UI**: Tailwind CSS를 사용한 깔끔하고 직관적인 사용자 인터페이스.
-*   **📂 데이터 관리**: 안전한 데이터 가져오기(Import) 및 내보내기(Export) 기능을 지원합니다.
+## 보안 구조 요약
 
-## 🚀 설치 및 실행 방법
+- 저장 위치: Electron `app.getPath('userData')` 아래 앱 전용 파일
+- 저장 방식: Electron main process 저장소 + 가능 시 `safeStorage` 사용
+- 암호화: Web Crypto API (`AES-GCM`)
+- 키 파생: `PBKDF2(SHA-256)`
+- 레거시 호환: 1.0.1(`SHA256(password+salt)` + CryptoJS AES) 백업 복구/변환 지원
 
-### 1. 설치 파일 다운로드 (사용자용)
+## 요구 사항
 
-최신 버전의 설치 파일은 [Releases](../../releases) 페이지에서 다운로드할 수 있습니다.
-*   **SecureKey Vault Setup 1.0.0.exe** 파일을 다운로드하여 실행하면 자동으로 설치됩니다.
+- Node.js 20+
+- npm
+- Windows (설치 파일 빌드 기준)
 
-### 2. 개발 환경 설정 (개발자용)
+## 설치 및 실행 (개발)
 
-소스 코드를 직접 수정하거나 빌드하려면 다음 단계를 따르세요.
-
-#### 필수 요구 사항
-*   Node.js (v20 이상 권장)
-*   npm
-
-#### 프로젝트 클론 및 의존성 설치
 ```bash
-git clone https://github.com/YOUR_USERNAME/SecureKey-Vault.git
-cd SecureKey-Vault
 npm install
+npm run dev
 ```
 
-#### 개발 모드 실행
-*   **웹 브라우저 모드**:
-    ```bash
-    npm run dev
-    ```
-*   **Electron 데스크톱 앱 모드**:
-    ```bash
-    npm run dev:electron
-    ```
+Electron 개발 실행:
 
-## 📦 빌드 및 배포
+```bash
+npm run dev:electron
+```
 
-Windows용 설치 파일(Installer)과 실행 파일(.exe)을 생성하려면 다음 명령어를 실행하세요.
+## 빌드
+
+웹 번들 빌드:
+
+```bash
+npm run build
+```
+
+Windows 설치 파일 빌드:
 
 ```bash
 npm run build:electron
 ```
 
-빌드가 완료되면 **`release`** 폴더에 설치 파일이 생성됩니다.
-*   `release/SecureKey Vault Setup 1.0.0.exe`: 배포용 설치 파일
-*   `release/win-unpacked/`: 설치 없이 실행 가능한 포터블 폴더
+생성 결과:
 
-## 🛠️ 기술 스택
+- `release/SecureKey Vault Setup 1.0.2.exe`
+- `release/win-unpacked/`
 
-*   **Runtime**: [Electron](https://www.electronjs.org/)
-*   **Backend/Frontend**: [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/)
-*   **Build Tool**: [Vite](https://vitejs.dev/)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-*   **Encryption**: [Crypto-js](https://github.com/brix/crypto-js)
-*   **Charting**: [Recharts](https://recharts.org/)
+## 1.0.1 -> 1.0.2 백업 변환
 
-## 📝 라이선스
+```bash
+npm run migrate:101-to-102 -- --input "C:\path\legacy-101.json" --output "C:\path\migrated-102.json"
+```
 
-이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
+- 실행 중 마스터 비밀번호를 입력하면 변환됩니다.
+- 변환된 JSON은 `version: 2` 형식입니다.
+
+## 1.0.1 백업 파일인지 확인 방법
+
+다음 조건이면 1.0.1 레거시 백업일 가능성이 높습니다.
+
+- `verificationHash`가 64자리 hex 문자열
+- 각 item의 `ciphertext`가 `U2FsdGVkX1...` 형태(Base64, `Salted__` 헤더)
+
+## 트러블슈팅
+
+- 아이콘이 바로 안 바뀌어 보이는 경우:
+  - 작업표시줄 고정 해제 후 다시 고정
+  - 기존 설치 제거 후 재설치
+  - Windows 아이콘 캐시 갱신 후 확인
+- `bad decrypt` 오류:
+  - 잘못된 마스터 비밀번호 가능성이 큼
+  - 1.0.1 백업이면 위 변환 명령으로 먼저 변환 후 가져오기 권장
+
+## 기술 스택
+
+- Electron
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+
+## 라이선스
+
+MIT

@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Shield, Unlock, KeyRound, AlertCircle } from 'lucide-react';
 import { dbService } from '../services/dbService';
-import { verifyPassword, deriveKey } from '../services/cryptoService';
 
 interface LoginProps {
-  onLogin: (derivedKey: string) => void;
+  onLogin: (derivedKey: string) => Promise<void>;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -13,76 +12,116 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setIsSetup(!dbService.hasDatabase());
+    let isMounted = true;
+
+    const checkDatabase = async () => {
+      try {
+        const hasDb = await dbService.hasDatabase();
+        if (isMounted) setIsSetup(!hasDb);
+      } catch {
+        if (isMounted) setIsSetup(true);
+      }
+    };
+
+    void checkDatabase();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const showInvalidPassword = () => {
+    setError('비밀번호가 올바르지 않습니다.');
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (isSetup) {
-      if (password.length < 4) {
-        setError('비밀번호가 너무 짧습니다.');
+    try {
+      if (isSetup) {
+        if (password.length < 4) {
+          setError('비밀번호가 너무 짧습니다.');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          setError('비밀번호가 일치하지 않습니다.');
+          return;
+        }
+
+        await dbService.initDatabase(password);
+      }
+
+      const derivedKey = await dbService.unlockDatabase(password);
+      if (!derivedKey) {
+        showInvalidPassword();
         return;
       }
-      if (password !== confirmPassword) {
-        setError('비밀번호가 일치하지 않습니다.');
-        return;
-      }
-      // Initialize DB
-      dbService.initDatabase(password);
-      // initDatabase already sets the key in dbService, but App needs to know too
-      const info = dbService.getDatabaseInfo();
-      if (info) {
-        const derivedKey = deriveKey(password, info.salt);
-        onLogin(derivedKey);
-      }
-    } else {
-      const dbInfo = dbService.getDatabaseInfo();
-      if (dbInfo && verifyPassword(password, dbInfo.salt, dbInfo.verificationHash)) {
-        const derivedKey = deriveKey(password, dbInfo.salt);
-        onLogin(derivedKey);
-      } else {
-        setError('비밀번호가 올바르지 않습니다.');
-        setShake(true);
-        setTimeout(() => setShake(false), 500);
-      }
+
+      await onLogin(derivedKey);
+    } catch {
+      setError('로그인 처리 중 문제가 발생했습니다. 다시 시도해주세요.');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
     }
   };
-
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // If database exists, warn user about overwriting
     if (!isSetup) {
-      if (!window.confirm("경고: 백업 파일을 불러오면 현재 기기에 저장된 모든 데이터가 삭제되고 덮어씌워집니다.\n\n계속하시겠습니까?")) {
-        // Reset input value so change event can fire again if same file selected
+      const shouldContinue = window.confirm(
+        '경고: 백업 파일을 불러오면 현재 기기에 저장된 모든 데이터가 삭제되고 덮어씌워집니다.\n\n계속하시겠습니까?'
+      );
+
+      if (!shouldContinue) {
         e.target.value = '';
         return;
       }
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
+      const content = event.target?.result as string;
+
       try {
-        const content = event.target?.result as string;
-        // Basic validation
-        const parsed = JSON.parse(content);
-        if (!parsed.verificationHash || !parsed.salt) {
-          throw new Error('Invalid database format');
-        }
-        localStorage.setItem('secure_key_vault_db_v1', content);
+        await dbService.importData(content);
         alert('복원되었습니다. 마스터 비밀번호로 로그인해주세요.');
         window.location.reload();
-      } catch (err) {
-        alert('잘못된 백업 파일입니다.');
+      } catch (error) {
+        if (error instanceof Error && error.message === 'LegacyPasswordRequired') {
+          const legacyPassword = window.prompt(
+            '1.0.1 백업 파일입니다.\n해당 백업의 마스터 비밀번호를 입력하면 1.0.2 형식으로 변환해 복원합니다.'
+          );
+
+          if (!legacyPassword) {
+            alert('복원이 취소되었습니다.');
+            return;
+          }
+
+          try {
+            await dbService.importData(content, legacyPassword);
+            alert('레거시 백업을 변환해 복원했습니다. 마스터 비밀번호로 로그인해주세요.');
+            window.location.reload();
+            return;
+          } catch (legacyError) {
+            if (legacyError instanceof Error && legacyError.message === 'LegacyPasswordInvalid') {
+              alert('백업 마스터 비밀번호가 올바르지 않습니다.');
+              return;
+            }
+          }
+        }
+
+        alert('잘못된 백업 파일이거나 복원 중 오류가 발생했습니다.');
       }
     };
+
     reader.readAsText(file);
   };
 
@@ -98,19 +137,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </h1>
           <p className="text-slate-400 text-center mt-2 text-sm">
             {isSetup
-              ? '이 비밀번호는 데이터를 로컬에서 암호화합니다. 분실 시 데이터를 복구할 수 없습니다.'
-              : '자격증명을 복호화하려면 마스터 비밀번호를 입력하세요.'}
+              ? '이 비밀번호로 데이터를 로컬에서 암호화합니다. 분실 시 데이터 복구가 어렵습니다.'
+              : '자격증명을 보호하려면 마스터 비밀번호를 입력하세요.'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* ... input fields removed for brevity in diff, but assumed to be here or handled by context ... */}
           <div>
             <div className="relative">
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="마스터 비밀번호"
                 className="w-full bg-slate-900 border border-slate-600 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-500 transition-all"
                 autoFocus
@@ -124,7 +162,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                   placeholder="비밀번호 확인"
                   className="w-full bg-slate-900 border border-slate-600 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-500 transition-all"
                 />
@@ -143,7 +181,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg transition-all shadow-lg hover:shadow-blue-500/25 active:scale-95 flex justify-center items-center space-x-2"
           >
-            {isSetup ? <span>볼트 생성</span> : <><Unlock className="w-4 h-4" /> <span>잠금 해제</span></>}
+            {isSetup ? (
+              <span>볼트 생성</span>
+            ) : (
+              <>
+                <Unlock className="w-4 h-4" />
+                <span>잠금 해제</span>
+              </>
+            )}
           </button>
         </form>
 
@@ -151,6 +196,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <p className="text-slate-400 text-xs mb-3">
             {isSetup ? '또는 기존 백업 파일에서 복원' : '비밀번호를 분실했거나 복구가 필요한 경우'}
           </p>
+
           <input
             type="file"
             ref={fileInputRef}
@@ -158,25 +204,29 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             className="hidden"
             accept=".json"
           />
+
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors flex items-center justify-center gap-2 w-full py-2 hover:bg-slate-700/50 rounded-lg"
           >
-            📂 백업 파일 불러오기 (.json)
+            백업 파일 불러오기 (.json)
           </button>
 
           {!isSetup && (
             <button
               onClick={() => {
-                if (window.confirm("모든 데이터가 삭제됩니다. 정말로 초기화하시겠습니까?")) {
-                  dbService.clearDatabase();
+                const shouldReset = window.confirm('모든 데이터가 삭제됩니다. 정말로 초기화하시겠습니까?');
+                if (!shouldReset) return;
+
+                void (async () => {
+                  await dbService.clearDatabase();
                   window.location.reload();
-                }
+                })();
               }}
               className="mt-2 text-xs text-slate-500 hover:text-red-400 transition-colors w-full py-2"
             >
-              데이터 초기화 (삭제)
+              데이터 초기화 (전체 삭제)
             </button>
           )}
         </div>
@@ -188,6 +238,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
           20%, 40%, 60%, 80% { transform: translateX(4px); }
         }
+
         .animate-shake {
           animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }

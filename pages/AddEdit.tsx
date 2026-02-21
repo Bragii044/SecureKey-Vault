@@ -6,7 +6,7 @@ import { CredentialItem } from '../types';
 import { Save, ArrowLeft, ChevronDown, Check, X, Key, Lock, Shield, Database, FileJson, Server, Eye, EyeOff } from 'lucide-react';
 
 interface AddEditProps {
-  onSave: (item: CredentialItem) => void;
+  onSave: (item: CredentialItem) => Promise<void>;
 }
 
 // Icon mapping based on auth type ID or generic fallback
@@ -102,7 +102,7 @@ const AddEdit: React.FC<AddEditProps> = ({ onSave }) => {
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!serviceName) return;
 
@@ -120,7 +120,7 @@ const AddEdit: React.FC<AddEditProps> = ({ onSave }) => {
       updatedAt: new Date().toISOString()
     };
 
-    onSave(newItem);
+    await onSave(newItem);
     navigate('/vault');
   };
 

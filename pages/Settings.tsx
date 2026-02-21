@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { dbService } from '../services/dbService';
 import { Download, Trash2, AlertOctagon, Upload, AlertTriangle } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
-import { DB_KEY } from '../constants';
 import Modal from '../components/Modal';
 
 const Settings: React.FC = () => {
@@ -12,9 +11,9 @@ const Settings: React.FC = () => {
   const [isNukeModalOpen, setIsNukeModalOpen] = useState(false);
   const [nukeConfirmText, setNukeConfirmText] = useState('');
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      const data = dbService.exportData();
+      const data = await dbService.exportData();
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -39,18 +38,37 @@ const Settings: React.FC = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
+      const content = event.target?.result as string;
+
       try {
-        const content = event.target?.result as string;
-        // Basic validation
-        const parsed = JSON.parse(content);
-        if (!parsed.verificationHash || !parsed.salt) {
-          throw new Error('Invalid database format');
-        }
-        localStorage.setItem(DB_KEY, content);
+        await dbService.importData(content);
         showToast('데이터를 성공적으로 가져왔습니다. 다시 로그인해주세요.', 'success');
         setTimeout(() => window.location.reload(), 1500);
-      } catch (err) {
+      } catch (error) {
+        if (error instanceof Error && error.message === 'LegacyPasswordRequired') {
+          const legacyPassword = window.prompt(
+            '1.0.1 백업 파일입니다.\n해당 백업의 마스터 비밀번호를 입력하면 1.0.2 형식으로 변환해 복원합니다.'
+          );
+
+          if (!legacyPassword) {
+            showToast('복원을 취소했습니다.', 'info');
+            return;
+          }
+
+          try {
+            await dbService.importData(content, legacyPassword);
+            showToast('레거시 백업을 변환해 복원했습니다. 다시 로그인해주세요.', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+            return;
+          } catch (legacyError) {
+            if (legacyError instanceof Error && legacyError.message === 'LegacyPasswordInvalid') {
+              showToast('백업 마스터 비밀번호가 올바르지 않습니다.', 'error');
+              return;
+            }
+          }
+        }
+
         showToast('잘못된 파일 형식이거나 손상된 파일입니다.', 'error');
       }
     };
@@ -62,10 +80,10 @@ const Settings: React.FC = () => {
     setIsNukeModalOpen(true);
   };
 
-  const confirmNuke = () => {
+  const confirmNuke = async () => {
     if (nukeConfirmText !== '삭제') return;
 
-    dbService.clearDatabase();
+    await dbService.clearDatabase();
     setIsNukeModalOpen(false);
     showToast('모든 데이터가 삭제되었습니다.', 'info');
     setTimeout(() => window.location.reload(), 1000);

